@@ -45,7 +45,7 @@ app.get("/cities", (req, res) => {
 });
 
 app.get("/menu", (req, res) => {
-  connection.query("select * from menu", (err, result) => {
+  connection.query("select * from categories", (err, result) => {
     console.log("menu");
     res.send(result);
   });
@@ -54,7 +54,7 @@ app.get("/menu", (req, res) => {
 // Select * from foods order by review desc
 app.get("/foods", (req, res) => {
   console.log(req.query, "req.query");
-  let query = "select * from foods";
+  let query = "select * from restaurants";
   if (req.query.filter !== "") {
     // sort cateogry filtering
     if (req.query.filter === "picked for you") {
@@ -91,24 +91,11 @@ app.get("/foods", (req, res) => {
       query += " where Dietary = 'Halal'";
     }
 
-    // if (req.query.filter === "rating") {
-    //   query += " order by review desc";
-    // } else if (req.query.filter === "delivery time") {
-    //   query += " order by deliveryTime desc";
-    // } else if (req.query.filter === "most popular") {
-    //   query += " order by id asc";
-    // } else if (req.query.filter === "deals") {
-    //   query += " where fromUberEats = 'Deals'";
-    // } else if (req.query.filter === "most popular") {
-    //   query += " where fromUberEats = 'Highest rated'";
-    // } else {
-    //   query += " order by deliveryFee desc ";
-    // }
     console.log(req.query.filter, "req.query.filter");
   }
 
   connection.query(query, (err, result) => {
-    console.log("foods");
+    console.log("restaurants");
     res.send(result);
   });
 });
@@ -172,7 +159,7 @@ app.post("/login", (req, res) => {
 
   connection.query(passworQuery, [hashPassword], (err, result) => {
     if (result.length >= 1) {
-      return res.send({
+      res.send({
         code: 409,
         message: "User is defined",
       });
@@ -187,24 +174,42 @@ app.post("/login", (req, res) => {
         expiresIn: "1h",
       }
     );
-
-    return res.send({ code: 200, token: token });
+    //server send token to C
+    res.send({ token: token });
   });
 });
 
-//received id index from front and find a DATA
-// app.get("/restaurantDetail/:id", (req, res) => {
-//   connection.query(`SELECT * FROM foods WHERE id = '${req.params.id}'`, (err, result) => {
-//     if (err) throw err;
-//     if (result.length === 0) {
-//       console.log("No product found");
-//       res.status(404).send("No product found");
-//     } else {
-//       console.log(result[0], "foodResult");
-//       res.send(result[0]);
-//     }
-//   });
-// });
+//restaurant dynamic routing
+
+app.get("/restaurant/:id", (req, res) => {
+  console.log(req.params.id, "ID");
+
+  connection.query(`SELECT * FROM foods WHERE resId = '${req.params.id}'`, (err, result) => {
+    if (err) throw err;
+    if (result.length === 0) {
+      console.log("No restaurant found");
+      res.send("No restaurant found");
+    } else {
+      console.log(result);
+      console.log("Restaurant page");
+      res.send(result);
+    }
+  });
+});
+
+app.get("/restaurantt/:id", (req, res) => {
+  connection.query(`select * from restaurants WHERE id  = '${req.params.id}'`, (err, result) => {
+    console.log("restaurants");
+    res.send(result);
+  });
+});
+
+app.get("/resDelivery", (req, res) => {
+  connection.query("select * from restaurants", (err, result) => {
+    console.log("resDelivery");
+    res.send(result);
+  });
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
