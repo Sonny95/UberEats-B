@@ -7,6 +7,9 @@ const crypto = require("crypto");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(
+  "sk_test_51NnXfBHG2cIt7OQecmj0GHxSnwRtqRPcxN7DQ5M2tGe9R5rMfgBkURpnp2BXimtOSepMVFAi5rPOnn3heki16CT000gqee5OiI"
+);
 
 let corsOptions = {
   origin: "*",
@@ -208,6 +211,23 @@ app.get("/resDelivery", (req, res) => {
   connection.query("select * from restaurants", (err, result) => {
     console.log("resDelivery");
     res.send(result);
+  });
+});
+
+app.post("/orderRecord", (req, res) => {
+  let insertQuery = `INSERT INTO orderRecord (cardNumber, cardExpiry, CVV, resId, mealName, email) VALUES ('${req.body.cardNumber}', '${req.body.cardExpiry}', '${req.body.CVV}','${req.body.resId}','${req.body.mealName}','${req.body.email}')`;
+  connection.query(insertQuery, (err, result) => {
+    console.log(err, "orderRecord?"); //password column over maximum
+    if (err) {
+      return res.send({
+        code: 409,
+        message: "Error while record history",
+      });
+    } else {
+      return res.send({
+        code: 200,
+      });
+    }
   });
 });
 
